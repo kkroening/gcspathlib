@@ -1,0 +1,44 @@
+digraph PathlibInheritance {
+    rankdir=BT
+    node [
+        color=grey
+        fontcolor=grey
+        fontname=courier
+        fontsize=10
+        shape=box
+        width=1
+    ]
+    edge [
+        color=grey
+    ]
+
+    PurePath [
+        color=black
+        fillcolor=white
+        fontcolor=black
+        style=filled
+    ]
+    PurePosixPath
+    PureWindowsPath
+    PureGCSPath [
+        color=black
+        fillcolor=lightblue
+        fontcolor=black
+        style=filled
+    ]
+    Path
+    PosixPath
+    WindowsPath
+
+    PurePosixPath -> PurePath
+    PureWindowsPath -> PurePath
+    PureGCSPath -> PurePath [
+        color=black
+        style=solid
+    ]
+    Path -> PurePath
+    PosixPath -> PurePosixPath
+    PosixPath -> Path
+    WindowsPath -> PureWindowsPath
+    WindowsPath -> Path
+}
