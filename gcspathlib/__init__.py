@@ -68,11 +68,22 @@ class PureGCSPath(pathlib.PurePath):
     while actual I/O with Google Cloud Storage is considered outside the scope of this
     class, keeping the library lightweight.
 
+    A :class:`PureGCSPath` is considered to be absolute or "complete" if it has both a
+    bucket and an object - whereas bucketless, bucket-only, and empty paths are
+    incomplete.
+
     Note:
-        The compatibility with :class:`pathlib.PurePath` means it can be used
-        interchangeably with :class:`pathlib.PurePosixPath` or
-        :class:`pathlib.PureWindowsPath`, making it versatile for local or cloud storage
-        applications.
+        Cloud Storage doesn'technically have directories in a strictly technical sense,
+        but in practice they're a valid consideration for paths, behaving reasonably
+        similarly to POSIX paths.
+
+    Todo:
+        Does it really make sense to support bucketless and bucket-only paths?  Might be
+        a little silly and potentially complicates usage because applications may need
+        to safeguard against incomplete paths.  An alternative would be to rely solely
+        on :class:`pathlib.PurePosixPath` as a way of representing bucketless paths that
+        can be joined to :class:`PureGCSPath`, so that every :class:`PureGCSPath` is
+        guaranteed to be complete - requiring both a bucket and object.
     """
 
     _flavour = _gcs_flavour
@@ -144,6 +155,16 @@ class PureGCSPath(pathlib.PurePath):
         self,
     ) -> Self:
         return type(self)(*self._bucket_parts)
+
+    def is_absolute(self) -> bool:
+        """Determines whether the path is complete with a bucket, an object, and a
+        filename.
+        """
+        return bool(self.bucket) and bool(self.obj)
+
+    def __bool__(self) -> bool:
+        """Determines whether the path is complete; alias for :meth:`.is_absolute`."""
+        return self.is_absolute()
 
 
 __all__ = [

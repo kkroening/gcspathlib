@@ -34,40 +34,63 @@ class Test_PureGCSPath:
         assert path.parts == tuple()
         assert path.name == ''
         assert path.suffix == ''
+        assert path.stem == ''
         assert path.bucket == ''
         assert path.obj == ''
-        assert str(path) == '.'  # TBD
         assert path.is_absolute() is False
+        assert bool(path) is False
+        assert str(path) == '.'  # FIXME: undesirable default behavior
 
-    def test__init_from_uri(self):
+    def test__init_absolute(self):
         uri = 'gs://bucket/dir1/dir2/file.txt'
         path = gcspathlib.PureGCSPath(uri)
         assert path.drive == 'gs://bucket'
         assert path.parts == ('gs://bucket/', 'dir1', 'dir2', 'file.txt')
         assert path.name == 'file.txt'
         assert path.suffix == '.txt'
+        assert path.stem == 'file'
         assert path.bucket == 'bucket'
         assert path.obj == 'dir1/dir2/file.txt'
         assert path.is_absolute() is True
-        assert str(path) == uri
+        assert bool(path) is True
         assert path.as_uri() == uri
+        assert str(path) == uri
 
-    def test__init_from_relative(self):
+    def test__init_bucketless(self):
         obj = 'dir1/dir2/file.txt'
         path = gcspathlib.PureGCSPath(obj)
         assert path.drive == ''
         assert path.parts == ('dir1', 'dir2', 'file.txt')
         assert path.name == 'file.txt'
         assert path.suffix == '.txt'
+        assert path.stem == 'file'
         assert path.bucket == ''
         assert path.obj == obj
         assert path.is_absolute() is False
+        assert bool(path) is False
         assert str(path) == obj
         with pytest.raises(ValueError) as excinfo:
             path.as_uri()
         assert str(excinfo.value) == 'relative path can\'t be expressed as a file URI'
 
-    def test__init_from_parts(self):
+    def test__init_bucket_only(self):
+        uri = 'gs://bucket'
+        path = gcspathlib.PureGCSPath(uri)
+        assert path.drive == 'gs://bucket'
+        assert path.parts == ('gs://bucket/',)
+        assert path.name == ''
+        assert path.suffix == ''
+        assert path.stem == ''
+        assert path.bucket == 'bucket'
+        assert path.obj == ''
+        assert path.is_absolute() is False
+        assert bool(path) is False
+        assert str(path) == 'gs://bucket/'
+        with pytest.raises(ValueError) as excinfo:
+            path.as_uri()
+        assert str(excinfo.value) == 'relative path can\'t be expressed as a file URI'
+
+    def test__init_from_parts(self):  # TODO: combine with other tests
         path = gcspathlib.PureGCSPath('/', 'dir', 'file')
         assert path.parts == ('dir', 'file')
 
@@ -177,25 +200,13 @@ class Test_PureGCSPath:
         assert my_dict[gcspathlib.PureGCSPath(path1)] is path1
         assert my_dict[path2] is path2
 
-    def test__parent_operation(self):
+    def test_parent__absolute(self):
         path = gcspathlib.PureGCSPath('gs://bucket/dir1/file.txt')
         assert path.parent == gcspathlib.PureGCSPath('gs://bucket/dir1')
         assert path.parent.parent == gcspathlib.PureGCSPath('gs://bucket/')
         assert path.parent.parent.parent == gcspathlib.PureGCSPath('gs://bucket/')
 
-    def test__suffix_and_stem_operations(self):
         path = gcspathlib.PureGCSPath('gs://bucket/dir1/file.txt')
-        assert path.suffix == '.txt'
-        assert path.stem == 'file'
-        assert path.with_suffix('.jpg') == gcspathlib.PureGCSPath(
-            'gs://bucket/dir1/file.jpg'
-        )
-
-    def test__is_absolute(self):
-        path1 = gcspathlib.PureGCSPath('gs://bucket/file.txt')
-        path2 = gcspathlib.PureGCSPath('file.txt')
-        assert path1.is_absolute() is True
-        assert path2.is_absolute() is False
 
     def test_relative_to(self):
         path = gcspathlib.PureGCSPath('gs://bucket/dir1/dir2/file.txt')
