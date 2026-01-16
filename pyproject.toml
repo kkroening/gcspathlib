@@ -1,33 +1,33 @@
+[build-system]
+build-backend = 'poetry.core.masonry.api'
+requires = ['poetry-core']
+
 [tool.poetry]
-name = "gcspathlib"
-version = "0.3.0"
-description = ""
-authors = ["Karl Kroening <karlk@kralnet.us>"]
-readme = "README.md"
+authors = ['Karl Kroening <karlk@kralnet.us>']
+description = ''
+name = 'gcspathlib'
+readme = 'README.md'
+version = '0.3.0'
 
 [tool.poetry.dependencies]
-python = "^3.11"
-
+python = '^3.11'
 
 [tool.poetry.group.dev.dependencies]
-black = "^23.7.0"
-isort = {extras = ["colors"], version = "^5.12.0"}
-mock = "^5.1.0"
-mypy = "^1.4.1"
-pylint = "^2.17.4"
-pytest = "^7.4.0"
-pytest-faker = "^2.0.0"
-pytest-only = "^2.0.0"
-pytest-randomly = "^3.13.0"
-pytest-xdist = "^3.3.1"
-types-mock = "^5.0.0.7"
-types-setuptools = "^68.0.0.1"
-ipython = "^8.14.0"
-factory-boy = "^3.3.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+black = '*'
+factory-boy = '*'
+ipython = '*'
+isort = {extras = ['colors'], version = '*'}
+mock = '*'
+mypy = '*'
+pylint = '*'
+pytest = '*'
+pytest-faker = '*'
+pytest-only = '*'
+pytest-randomly = '*'
+pytest-xdist = '*'
+setuptools = '<80'  # TMP/FIXME: workaround for pytest-only being misbehaved
+types-mock = '*'
+types-setuptools = '*'
 
 [tool.black]
 include = '^/(gcspathlib|tests)/.*\.pyi?$'
@@ -53,11 +53,11 @@ warn_redundant_casts = true
 warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-allow_redefinition = true
-module = "tests.*"
+# allow_redefinition = true
+module = 'tests.*'
 
 [[tool.mypy.overrides]]
-module = "gcspathlib.*"
+module = 'gcspathlib.*'
 check_untyped_defs = true
 disallow_any_generics = true
 disallow_incomplete_defs = true
@@ -65,20 +65,22 @@ disallow_subclassing_any = true
 disallow_untyped_calls = true
 disallow_untyped_decorators = true
 disallow_untyped_defs = true
+extra_checks = true
 no_implicit_optional = true
 no_implicit_reexport = true
 strict_concatenate = true
 strict_equality = true
 warn_return_any = true
-warn_unused_ignores = true
 warn_unreachable = true
+warn_unused_ignores = true
 
 [tool.pytest.ini_options]
-addopts = '''
-    --pdbcls=IPython.terminal.debugger:Pdb
-    -W "error::pytest.PytestUnhandledCoroutineWarning"
-    -W "error::pytest.PytestUnraisableExceptionWarning"
-    -W "error::RuntimeWarning"
-'''
+addopts = '--pdbcls=IPython.terminal.debugger:Pdb'
+filterwarnings = [
+    'error::pytest.PytestUnraisableExceptionWarning',
+    'error::RuntimeWarning',
+    # 'ignore:distutils Version classes are deprecated. Use packaging.version instead.:DeprecationWarning:pytest_freezegun',
+    'ignore:pkg_resources is deprecated as an API.:DeprecationWarning',  # TMP/FIXME: workaround for pytest-only needing setuptools
+]
 markers = []
-testpaths = ["tests"]
+testpaths = ['tests']

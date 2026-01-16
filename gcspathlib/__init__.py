@@ -1,5 +1,5 @@
-import pathlib
 import urllib.parse
+from . import _old_pathlib
 from typing import ClassVar
 from typing import Self
 
@@ -7,18 +7,25 @@ URI_PREFIX = 'gs://'
 
 
 class _GCSFlavour(
-    pathlib._PosixFlavour,  # type: ignore[misc,name-defined]  # pylint: disable=protected-access
+    _old_pathlib._PosixFlavour,  # type: ignore[misc,name-defined]  # pylint: disable=protected-access
 ):
-    """Implementation of the core :mod:`pathlib` functionality for Cloud Storage paths.
-
-    :class:`pathlib._Flavour` is an internal implementation detail of :mod:`pathlib`,
-    but extending it in this manner along with a :class:`PureGCSPath` implementation
-    enables use of the standard :class:`pathlib.PurePath` functionality without
-    reinventing the wheel.
+    """Implementation of the core :mod:`_old_pathlib` functionality for Cloud Storage
+    paths.
 
     Warning:
-        This could certainly break across Python versions if :mod:`pathlib` is ever
-        refactored, but that's a price worth paying.
+        :class:`pathlib._Flavour` is an internal implementation detail of the legacy
+        Python 3.11 :mod:`pathlib`, which has completely changed as of Python 3.14.
+        For now, the legacy Python 3.11 pathlib has been pulled forward to
+        ``_old_pathlib.py``.  This is a nasty, nasty hack to enable transition for
+        projects that need :mod:`gcspathlib` but are still on Python 3.11, while working
+        seamlessly with Python 3.14+ as well.
+
+        The original intent of leveraging :class:`pathlib._Flavour` was to be able to
+        subclass/extend :class:`pathlib.PurePath` to inherit the standard pathlib base
+        functionality without having to reinvent the wheel.
+
+    Todo:
+        Eliminate legacy :mod:`_old_pathlib` dependency.
     """
 
     is_supported: ClassVar[bool] = False  # only "Pure" implementation is allowed
@@ -47,7 +54,7 @@ class _GCSFlavour(
 
     def make_uri(
         self,
-        path: pathlib.PurePath,
+        path: _old_pathlib.PurePath,  # type: ignore
     ) -> str:
         assert isinstance(path, PureGCSPath)
         assert path.is_absolute()
@@ -57,13 +64,15 @@ class _GCSFlavour(
 _gcs_flavour = _GCSFlavour()
 
 
-class PureGCSPath(pathlib.PurePath):
-    """A :class:`pathlib.PurePath` subclass that represents Cloud Storage paths.
+class PureGCSPath(
+    _old_pathlib.PurePath,  # type: ignore
+):
+    """A :class:`_old_pathlib.PurePath` subclass that represents Cloud Storage paths.
 
-    The purpose of this class is to provide a :class:`pathlib.PurePath` compatible
+    The purpose of this class is to provide a :class:`_old_pathlib.PurePath` compatible
     interface for manipulating Cloud Storage bucket and object names as paths.
 
-    Just like :class:`pathlib.PurePath`, this is a "pure" path because it performs no
+    Just like :class:`_old_pathlib.PurePath`, this is a "pure" path because it performs no
     I/O operations on its own. The main goal is to handle the path manipulation part,
     while actual I/O with Google Cloud Storage is considered outside the scope of this
     class, keeping the library lightweight.
@@ -81,8 +90,8 @@ class PureGCSPath(pathlib.PurePath):
         Does it really make sense to support bucketless and bucket-only paths?  Might be
         a little silly and potentially complicates usage because applications may need
         to safeguard against incomplete paths.  An alternative would be to rely solely
-        on :class:`pathlib.PurePosixPath` as a way of representing bucketless paths that
-        can be joined to :class:`PureGCSPath`, so that every :class:`PureGCSPath` is
+        on :class:`_old_pathlib.PurePosixPath` as a way of representing bucketless paths
+        that can be joined to :class:`PureGCSPath`, so that every :class:`PureGCSPath` is
         guaranteed to be complete - requiring both a bucket and object.
     """
 
@@ -95,7 +104,7 @@ class PureGCSPath(pathlib.PurePath):
 
     @property
     def _obj_parts(self) -> tuple[str, ...]:
-        return self.parts[1:] if self.drive else self.parts
+        return self.parts[1:] if self.drive else self.parts  # type: ignore
 
     @property
     def bucket(self) -> str:
@@ -103,7 +112,7 @@ class PureGCSPath(pathlib.PurePath):
 
         If the path has no bucket (i.e. a relative path), an empty string is returned.
         """
-        return self.drive.removeprefix(URI_PREFIX).removesuffix(self._flavour.sep)
+        return self.drive.removeprefix(URI_PREFIX).removesuffix(self._flavour.sep)  # type: ignore
 
     def with_bucket(
         self,
@@ -144,7 +153,7 @@ class PureGCSPath(pathlib.PurePath):
             and requires careful consideration; might be better to just reject it.
             However, the same issue applies when joining paths - e.g. via the ``/``
             operator, which allows changing to a different bucket - just like in other
-            :class:`pathlib.PurePath` implementations.
+            :class:`_old_pathlib.PurePath` implementations.
 
             One way or another though, there needs to be a way for a caller to reliably
             build GCS URIs without having to manually check for such oddities.

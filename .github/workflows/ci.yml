@@ -3,41 +3,51 @@ on:
   - push
 jobs:
   black:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: psf/black@23.7.0
-  isort:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v3
+      # Note: avoid official `psf/black` GHA action to ensure version matches Poetry lock.
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/init
-      - name: Run pylint
-        run: |
+      - run: |
+          poetry run black \
+            --check \
+            --color \
+            --diff \
+            .
+
+  isort:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/init
+      - run: |
           poetry run isort \
             --check \
             --color \
             --diff \
             gcspathlib \
             tests
+
   mypy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/init
       - name: Run mypy
         run: poetry run mypy gcspathlib
+
   pylint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/init
       - name: Run pylint
         run: poetry run pylint gcspathlib
+
   pytest:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/init
       - name: Run pytest
         run: |
