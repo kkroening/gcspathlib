@@ -1,3 +1,5 @@
+# type: ignore
+# pylint: skip-file
 """Legacy Python 3.11 ``pathlib.py``, pulled forward to Python 3.14+ to remain backwards
 compatible during a transition period, since ``gcspathlib`` needs ``_PosixFlavour``.
 
@@ -5,8 +7,6 @@ Todo:
     This is a nasty hack and should go away.
 """
 
-# type: ignore
-# pylint: skip-file
 import fnmatch
 import functools
 import io
@@ -17,11 +17,19 @@ import re
 import sys
 import warnings
 from _collections_abc import Sequence
-from errno import ENOENT, ENOTDIR, EBADF, ELOOP
+from errno import EBADF
+from errno import ELOOP
+from errno import ENOENT
+from errno import ENOTDIR
 from operator import attrgetter
-from stat import S_ISDIR, S_ISLNK, S_ISREG, S_ISSOCK, S_ISBLK, S_ISCHR, S_ISFIFO
+from stat import S_ISBLK
+from stat import S_ISCHR
+from stat import S_ISDIR
+from stat import S_ISFIFO
+from stat import S_ISLNK
+from stat import S_ISREG
+from stat import S_ISSOCK
 from urllib.parse import quote_from_bytes as urlquote_from_bytes
-
 
 __all__ = [
     "PurePath",
